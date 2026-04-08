@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>beautyql staff mobile</title>
+  <style>
+    :root{
+      --bg:#f7f3ec;
+      --card:#ffffff;
+      --line:#e6dccd;
+      --text:#2f2418;
+      --sub:#7c6b58;
+      --accent:#b7791f;
+      --danger:#b42318;
+      --danger-bg:#fff1f0;
+      --warn:#b45309;
+      --warn-bg:#fff9f0;
+      --ok:#166534;
+      --ok-bg:#f0fdf4;
+      --done:#475467;
+      --done-bg:#f8f9fb;
+      --shadow:0 8px 24px rgba(61,43,16,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Meiryo",sans-serif
+    }
+    body{min-height:100vh}
+    .app{max-width:720px;margin:0 auto;padding:12px 12px 88px}
+    .hidden{display:none!important}
+    .panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-bottom:12px;
+    }
+    .head{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-weight:800;
+    }
+    .staff-name{
+      color:var(--accent);
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .calendar-nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:10px 10px 0;
+    }
+    .nav-btn,.back-btn,.order-btn{
+      border:none;
+      background:#efe6d7;
+      color:var(--text);
+      min-width:42px;
+      height:42px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .back-btn{
+      width:auto;
+      padding:0 14px;
+    }
+    .order-btn{
+      min-width:38px;
+      height:38px;
+      font-size:16px;
+      font-weight:900;
+    }
+    .order-btn:disabled{
+      opacity:.45;
+      cursor:default;
+    }
+    .calendar-title{
+      font-size:18px;
+      font-weight:900;
+    }
+    .weekday-row,.calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:4px;
+      padding:10px;
+    }
+    .weekday-row{padding-bottom:0}
+    .weekday{
+      text-align:center;
+      font-size:11px;
+      color:var(--sub);
+      font-weight:700;
+    }
+    .day{
+      min-height:74px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      padding:6px;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:flex-start;
+    }
+    .day.empty{
+      background:transparent;
+      border:none;
+      cursor:default;
+    }
+    .day.has-work{background:#fdf2f2}
+    .day.warn{
+      background:var(--warn-bg);
+      border-color:#f0b96b;
+    }
+    .day.danger{
+      background:var(--danger-bg);
+      border-color:#e59d99;
+    }
+    .day.done{
+      background:#f7f7f8;
+      border-color:#d8dbe0;
+    }
+    .day.today{
+      outline:2px solid var(--accent);
+      outline-offset:0;
+    }
+    .num{font-weight:900;font-size:14px}
+    .count{
+      font-size:10px;
+      color:var(--sub);
+      margin-top:auto;
+      line-height:1.3;
+      white-space:pre-line;
+    }
+    .date-wrap{
+      padding:14px 16px;
+    }
+    .date-title{
+      font-size:20px;
+      font-weight:900;
+      line-height:1.4;
+      margin-top:10px;
+    }
+    .date-sub{
+      font-size:13px;
+      color:var(--sub);
+      margin-top:4px;
+    }
+    .summary-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-top:12px;
+    }
+    .summary-box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 8px;
+      background:#fffaf3;
+      text-align:center;
+    }
+    .summary-n{
+      font-size:20px;
+      font-weight:900;
+    }
+    .summary-l{
+      margin-top:2px;
+      font-size:11px;
+      color:var(--sub);
+    }
+    .route-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow);
+    }
+    .card-warn{
+      background:var(--warn-bg);
+      border-color:#f0b96b;
+    }
+    .card-danger{
+      background:var(--danger-bg);
+      border-color:#e59d99;
+    }
+    .card-done{
+      background:var(--done-bg);
+      border-color:#d8dbe0;
+      opacity:.72;
+    }
+    .card-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-top-left{
+      min-width:0;
+      flex:1;
+    }
+    .visit-order-box{
+      min-width:118px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fffaf3;
+      padding:8px;
+      text-align:center;
+      flex-shrink:0;
+    }
+    .visit-order-label{
+      font-size:11px;
+      color:var(--sub);
+      font-weight:800;
+      margin-bottom:4px;
+    }
+    .visit-order-no{
+      font-size:22px;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:8px;
+    }
+    .visit-order-btns{
+      display:flex;
+      gap:6px;
+      justify-content:center;
+    }
+    .cust-name{
+      font-weight:900;
+      font-size:18px;
+      line-height:1.4;
+      word-break:break-word;
+    }
+    .subline{
+      font-size:13px;
+      color:var(--sub);
+      margin-top:4px;
+      line-height:1.5;
+    }
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-top:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--sub);
+      margin-right:6px;
+      margin-bottom:4px;
+    }
+    .status-chip.wait{
+      background:var(--warn-bg);
+      border-color:#f0b96b;
+      color:var(--warn);
+    }
+    .status-chip.lock{
+      background:#fffaf3;
+      border-color:#d9c6aa;
+      color:#8a6a35;
+    }
+    .status-chip.done{
+      background:#f3f4f6;
+      border-color:#d0d5dd;
+      color:var(--done);
+    }
+    .action-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:8px;
+      margin:12px 0 10px;
+    }
+    .btn-link,.copy-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:800;
+      font-size:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      cursor:pointer;
+    }
+    .btn-tel{
+      color:var(--ok);
+      border-color:var(--ok);
+    }
+    .btn-map{
+      color:#1d4ed8;
+      border-color:#93c5fd;
+    }
+    .copy-btn{
+      color:#7c3aed;
+      border-color:#c4b5fd;
+    }
+    .check-btn,.done-btn{
+      width:100%;
+      min-height:50px;
+      border-radius:12px;
+      border:2px solid var(--line);
+      background:#fff;
+      font-weight:900;
+      cursor:pointer;
+      margin-top:8px;
+    }
+    .check-btn.on{
+      background:var(--ok-bg);
+      border-color:var(--ok);
+      color:var(--ok);
+    }
+    .done-btn.on{
+      background:#f3f4f6;
+      border-color:#98a2b3;
+      color:var(--done);
+    }
+    .next-btn{
+      width:100%;
+      min-height:50px;
+      background:#2f2418;
+      color:#fff;
+      border-radius:12px;
+      border:none;
+      font-weight:900;
+      margin-top:8px;
+      cursor:pointer;
+    }
+    .next-btn:disabled,
+    .candidate-btn:disabled{
+      opacity:.55;
+      cursor:default;
+    }
+    .candidate-btn{
+      width:100%;
+      min-height:52px;
+      background:#fff;
+      color:#2f2418;
+      border-radius:12px;
+      border:1px solid #2f2418;
+      font-weight:900;
+      margin-top:8px;
+      cursor:pointer;
+      padding:10px 12px;
+      text-align:left;
+    }
+    .candidate-btn.same-weekday{
+      background:#fffaf3;
+      border-color:#d9c6aa;
+    }
+    .candidate-big{
+      font-size:15px;
+      font-weight:900;
+    }
+    .candidate-small{
+      font-size:11px;
+      color:var(--sub);
+      margin-top:4px;
+      font-weight:700;
+    }
+    .same-weekday-badge{
+      display:inline-flex;
+      margin-top:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      background:#fff3cd;
+      color:#8a6a35;
+      border:1px solid #ead7a2;
+    }
+    .group-head{
+      font-size:14px;
+      font-weight:900;
+      margin-top:14px;
+      margin-bottom:6px;
+    }
+    .notice{
+      margin-top:12px;
+      font-size:12px;
+      color:var(--sub);
+      line-height:1.6;
+    }
+    .empty{
+      padding:24px 16px;
+      text-align:center;
+      color:var(--sub);
+      font-weight:700;
+    }
+    #toast{
+      position:fixed;
+      bottom:20px;
+      left:50%;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,.82);
+      color:#fff;
+      padding:12px 18px;
+      border-radius:18px;
+      font-size:14px;
+      z-index:9999;
+      display:none;
+      max-width:92vw;
+      box-shadow:0 8px 24px rgba(0,0,0,.2);
+    }
+    .toast-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    .toast-undo{
+      border:none;
+      background:#fff;
+      color:#2f2418;
+      border-radius:999px;
+      min-height:34px;
+      padding:0 14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .staff-error{
+      padding:20px;
+      text-align:center;
+      background:#fff;
+      border-radius:var(--radius);
+      border:2px dashed var(--danger);
+      box-shadow:var(--shadow);
+    }
+    .staff-error h3{
+      color:var(--danger);
+      margin:0 0 8px;
+    }
+    .staff-error p{
+      margin:0;
+      line-height:1.7;
+    }
+    @media (max-width:480px){
+      .date-title{font-size:18px}
+      .cust-name{font-size:17px}
+      .day{min-height:68px}
+      .card-top{flex-direction:column}
+      .visit-order-box{
+        width:100%;
+        min-width:0;
+      }
+      .action-row{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="toast"></div>
+
+  <div class="app">
+    <div id="error-no-staff" class="staff-error hidden">
+      <h3>【重要】ログインエラー</h3>
+      <p>スタッフ名がURLに設定されていません。<br>本部へ連絡し、正しいリンクを再取得してください。</p>
+    </div>
+
+    <div id="screen-calendar">
+      <div class="panel">
+        <div class="head">
+          <span>仕事日カレンダー</span>
+          <span id="staffDisplay" class="staff-name"></span>
+        </div>
+
+        <div class="calendar-nav">
+          <button class="nav-btn" id="prevMonthBtn" type="button">‹</button>
+          <div class="calendar-title" id="calendarTitle"></div>
+          <button class="nav-btn" id="nextMonthBtn" type="button">›</button>
+        </div>
+
+        <div class="weekday-row">
+          <div class="weekday">日</div>
+          <div class="weekday">月</div>
+          <div class="weekday">火</div>
+          <div class="weekday">水</div>
+          <div class="weekday">木</div>
+          <div class="weekday">金</div>
+          <div class="weekday">土</div>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+
+    <div id="screen-day" class="hidden">
+      <div class="panel">
+        <div class="date-wrap">
+          <button class="back-btn" id="backCalendarBtn" type="button">← カレンダーへ戻る</button>
+          <div class="date-title" id="dayTitle"></div>
+          <div class="date-sub" id="daySub"></div>
+
+          <div class="summary-row">
+            <div class="summary-box">
+              <div class="summary-n" id="sumTotal">0</div>
+              <div class="summary-l">利用者</div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-n" id="sumRemaining">0</div>
+              <div class="summary-l">未完了</div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-n" id="sumDone">0</div>
+              <div class="summary-l">完了</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dayList"></div>
+      <div id="dayEmpty" class="empty hidden">この日の予約はありません</div>
+    </div>
+
+    <div id="screen-next" class="hidden">
+      <div class="panel">
+        <div class="date-wrap">
+          <button class="back-btn" id="backDayBtn" type="button">← 戻る</button>
+          <div class="date-title" id="nextCustName"></div>
+          <div class="date-sub" id="nextCustSub"></div>
+
+          <div class="group-head">1ヶ月後 3候補</div>
+          <div id="group1"></div>
+
+          <div class="group-head">2ヶ月後 3候補</div>
+          <div id="group2"></div>
+
+          <div class="group-head">3ヶ月後 3候補</div>
+          <div id="group3"></div>
+
+          <div class="notice">ボタンを押すと管理者予約として即時保存します。保存ステータスは「待機」です。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      reservations: 'beautyql_reservations',
+      customers: 'beautyql_customers'
+    };
+
+    const state = {
+      currentStaff: '',
+      currentStaffKey: '',
+      selectedDate: '',
+      monthCursor: firstDayOfMonth(new Date()),
+      nextBaseDate: '',
+      nextCustomerId: '',
+      nextCustomerName: '',
+      savingNext: false,
+      undoTimer: null,
+      lastSavedReservationSnapshot: null
+    };
+
+    function safeParse(json, fallback) {
+      try {
+        const v = JSON.parse(json);
+        return Array.isArray(fallback) ? (Array.isArray(v) ? v : fallback) : (v ?? fallback);
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function normalizeStaffName(value) {
+      return String(value ?? '').replace(/[ \u3000]/g, '').trim();
+    }
+
+    function loadRawReservations() {
+      return safeParse(localStorage.getItem(STORAGE_KEYS.reservations), []);
+    }
+
+    function saveRawReservations(list) {
+      localStorage.setItem(STORAGE_KEYS.reservations, JSON.stringify(list));
+    }
+
+    function loadCustomers() {
+      return safeParse(localStorage.getItem(STORAGE_KEYS.customers), []);
+    }
+
+    function normalizeCustomerId(obj) {
+      if (!obj || typeof obj !== 'object') return '';
+      return String(
+        obj.id ??
+        obj.customerId ??
+        obj.customer_id ??
+        obj.customerID ??
+        obj.uid ??
+        obj.code ??
+        obj.no ??
+        ''
+      ).trim();
+    }
+
+    function readCustomersMap() {
+      const map = new Map();
+      loadCustomers().forEach(c => {
+        const id = normalizeCustomerId(c);
+        if (id) map.set(id, c);
+      });
+      return map;
+    }
+
+    function getVisitOrderValue(raw) {
+      const n1 = Number(raw.visitOrder);
+      if (Number.isFinite(n1) && n1 > 0) return n1;
+      const n2 = Number(raw.routeOrder);
+      if (Number.isFinite(n2) && n2 > 0) return n2;
+      const n3 = Number(raw.order);
+      if (Number.isFinite(n3) && n3 > 0) return n3;
+      const n4 = Number(raw.sortOrder);
+      if (Number.isFinite(n4) && n4 > 0) return n4;
+      return null;
+    }
+
+    function normalizeReservation(raw, index, customerMap) {
+      const customerId = String(
+        raw.customerId ??
+        raw.customer_id ??
+        raw.customerID ??
+        ''
+      ).trim();
+
+      const customer = customerMap.get(customerId) || null;
+
+      return {
+        ...raw,
+        _rawIndex: index,
+        customerId,
+        customerName: String(
+          raw.customerName ??
+          raw.name ??
+          raw.customer_name ??
+          customer?.name ??
+          customer?.customerName ??
+          customer?.customer_name ??
+          ''
+        ).trim(),
+        address: String(
+          raw.address ??
+          raw.customerAddress ??
+          customer?.address ??
+          customer?.customerAddress ??
+          ''
+        ).trim(),
+        phone: String(
+          raw.phone ??
+          raw.tel ??
+          raw.customerPhone ??
+          customer?.phone ??
+          customer?.tel ??
+          customer?.customerPhone ??
+          ''
+        ).trim(),
+        staff: String(raw.staff ?? '').trim(),
+        date: String(raw.date ?? '').trim(),
+        time: String(raw.time ?? '').trim(),
+        sourceDate: String(raw.sourceDate ?? '').trim(),
+        createdByStaff: String(raw.createdByStaff ?? '').trim(),
+        status: String(raw.status ?? '').trim(),
+        pendingKey: String(raw.pendingKey ?? '').trim(),
+        visitOrder: getVisitOrderValue(raw),
+        visitDone: !!(raw.visitDone || raw.done || raw.completed)
+      };
+    }
+
+    function loadNormalizedReservations() {
+      const customerMap = readCustomersMap();
+      return loadRawReservations()
+        .map((r, i) => normalizeReservation(r, i, customerMap))
+        .filter(r => r.date);
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatYmd(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseYmd(ymd) {
+      if (!ymd || !/^\d{4}-\d{2}-\d{2}$/.test(ymd)) return null;
+      const [y, m, d] = ymd.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function firstDayOfMonth(date) {
+      return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    function getMonthLabel(date) {
+      return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+    }
+
+    function getWeekday(date) {
+      return ['日','月','火','水','木','金','土'][date.getDay()];
+    }
+
+    function formatJapaneseDate(ymd) {
+      const d = parseYmd(ymd);
+      if (!d) return '';
+      return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${getWeekday(d)}）`;
+    }
+
+    function isTodayYmd(ymd) {
+      return ymd === formatYmd(new Date());
+    }
+
+    function isTimeChecked(r) {
+      return !!(r.timeConfirmed || r.timeChecked || r.contactChecked || r.precheckDone);
+    }
+
+    function isVisitDone(r) {
+      return !!r.visitDone;
+    }
+
+    function hasTimeValue(v) {
+      return String(v ?? '').trim() !== '';
+    }
+
+    function compareByTimeThenName(a, b) {
+      const ta = String(a.time || '99:99');
+      const tb = String(b.time || '99:99');
+      if (ta < tb) return -1;
+      if (ta > tb) return 1;
+      return String(a.customerName || '').localeCompare(String(b.customerName || ''), 'ja');
+    }
+
+    function compareByVisitOrderThenTime(a, b) {
+      const oa = Number.isFinite(a.visitOrder) ? a.visitOrder : 9999;
+      const ob = Number.isFinite(b.visitOrder) ? b.visitOrder : 9999;
+      if (oa !== ob) return oa - ob;
+
+      const ta = String(a.time || '99:99');
+      const tb = String(b.time || '99:99');
+      if (ta < tb) return -1;
+      if (ta > tb) return 1;
+
+      return String(a.customerName || '').localeCompare(String(b.customerName || ''), 'ja');
+    }
+
+    function getDayUsesTimePriority(list) {
+      return list.some(r => !isVisitDone(r) && hasTimeValue(r.time));
+    }
+
+    function sortReservationsForDate(list) {
+      const copied = [...list];
+      const usesTimePriority = getDayUsesTimePriority(copied);
+      const baseComparator = usesTimePriority ? compareByTimeThenName : compareByVisitOrderThenTime;
+
+      return copied.sort((a, b) => {
+        if (a.visitDone !== b.visitDone) return a.visitDone ? 1 : -1;
+        return baseComparator(a, b);
+      });
+    }
+
+    function getMyReservations() {
+      const all = loadNormalizedReservations();
+      return all.filter(r => normalizeStaffName(r.staff) === state.currentStaffKey);
+    }
+
+    function diffDaysFromToday(ymd) {
+      const target = parseYmd(ymd);
+      if (!target) return 99999;
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const t = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+      return Math.floor((t.getTime() - today.getTime()) / 86400000);
+    }
+
+    function getAlertLevel(r) {
+      if (isVisitDone(r)) return 'ok';
+      if (isTimeChecked(r)) return 'ok';
+      const diff = diffDaysFromToday(r.date);
+      if (diff <= 1) return 'danger';
+      if (diff <= 4) return 'warn';
+      return 'none';
+    }
+
+    function setScreen(id) {
+      document.getElementById('screen-calendar').classList.add('hidden');
+      document.getElementById('screen-day').classList.add('hidden');
+      document.getElementById('screen-next').classList.add('hidden');
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function clearUndoState() {
+      if (state.undoTimer) {
+        clearTimeout(state.undoTimer);
+        state.undoTimer = null;
+      }
+      state.lastSavedReservationSnapshot = null;
+    }
+
+    function hideToast() {
+      const t = document.getElementById('toast');
+      t.style.display = 'none';
+      t.innerHTML = '';
+    }
+
+    function showToast(message) {
+      clearUndoState();
+      const t = document.getElementById('toast');
+      t.innerHTML = `<div class="toast-row"><span>${escapeHtml(message)}</span></div>`;
+      t.style.display = 'block';
+      setTimeout(() => {
+        hideToast();
+      }, 2000);
+    }
+
+    function showUndoToast(message, onUndo) {
+      clearUndoState();
+      const t = document.getElementById('toast');
+      t.innerHTML = `
+        <div class="toast-row">
+          <span>${escapeHtml(message)}</span>
+          <button type="button" class="toast-undo" id="toastUndoBtn">元に戻す</button>
+        </div>
+      `;
+      t.style.display = 'block';
+
+      const btn = document.getElementById('toastUndoBtn');
+      btn.addEventListener('click', () => {
+        if (typeof onUndo === 'function') onUndo();
+        hideToast();
+        clearUndoState();
+      });
+
+      state.undoTimer = setTimeout(() => {
+        hideToast();
+        clearUndoState();
+      }, 3000);
+    }
+
+    function setVisitOrderFields(target, value) {
+      target.visitOrder = value;
+      target.routeOrder = value;
+      target.order = value;
+      target.sortOrder = value;
+    }
+
+    function getSameDayRawIndexes(dateYmd) {
+      const raw = loadRawReservations();
+      const result = [];
+      raw.forEach((item, index) => {
+        const itemDate = String(item.date ?? '').trim();
+        const itemStaff = normalizeStaffName(item.staff);
+        if (itemDate !== dateYmd) return;
+        if (itemStaff !== state.currentStaffKey) return;
+        result.push(index);
+      });
+      return result;
+    }
+
+    function resequenceForDate(dateYmd) {
+      const raw = loadRawReservations();
+      const customerMap = readCustomersMap();
+
+      const sameDayViews = getSameDayRawIndexes(dateYmd).map(index =>
+        normalizeReservation(raw[index], index, customerMap)
+      );
+
+      if (!sameDayViews.length) return;
+
+      const ordered = sortReservationsForDate(sameDayViews);
+
+      ordered.forEach((item, idx) => {
+        if (!raw[item._rawIndex]) return;
+        setVisitOrderFields(raw[item._rawIndex], idx + 1);
+      });
+
+      saveRawReservations(raw);
+    }
+
+    function moveVisitOrder(rawIndex, direction) {
+      const raw = loadRawReservations();
+      const current = raw[rawIndex];
+      if (!current) return;
+
+      const dateYmd = String(current.date ?? '').trim();
+      const customerMap = readCustomersMap();
+
+      const sameDay = getSameDayRawIndexes(dateYmd).map(index =>
+        normalizeReservation(raw[index], index, customerMap)
+      );
+
+      if (getDayUsesTimePriority(sameDay)) {
+        showToast('時間が入っている日は時間順で固定です');
+        return;
+      }
+
+      const undone = sameDay.filter(r => !isVisitDone(r)).sort(compareByVisitOrderThenTime);
+      const done = sameDay.filter(r => isVisitDone(r)).sort(compareByVisitOrderThenTime);
+
+      const currentPos = undone.findIndex(v => v._rawIndex === rawIndex);
+      if (currentPos === -1) return;
+
+      const targetPos = currentPos + direction;
+      if (targetPos < 0 || targetPos >= undone.length) return;
+
+      const temp = undone[currentPos];
+      undone[currentPos] = undone[targetPos];
+      undone[targetPos] = temp;
+
+      const merged = [...undone, ...done];
+
+      merged.forEach((item, idx) => {
+        const targetRaw = raw[item._rawIndex];
+        if (!targetRaw) return;
+        setVisitOrderFields(targetRaw, idx + 1);
+        if (hasTimeValue(targetRaw.time)) {
+          targetRaw.time = '';
+        }
+      });
+
+      saveRawReservations(raw);
+      showToast('訪問順を保存しました');
+      renderCalendar();
+      if (state.selectedDate) openDay(state.selectedDate);
+    }
+
+    function normalizeTelHref(phone) {
+      const cleaned = String(phone || '').replace(/[^\d+]/g, '');
+      return cleaned ? `tel:${cleaned}` : 'javascript:void(0)';
+    }
+
+    function buildMapUrl(address) {
+      const q = encodeURIComponent(String(address || '').trim());
+      return `https://www.google.com/maps/search/?api=1&query=${q}`;
+    }
+
+    async function copyText(text) {
+      const value = String(text || '').trim();
+      if (!value) {
+        showToast('住所がありません');
+        return;
+      }
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = value;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        showToast('住所をコピーしました');
+      } catch (e) {
+        showToast('コピーできませんでした');
+      }
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      document.getElementById('calendarTitle').textContent = getMonthLabel(state.monthCursor);
+
+      const monthStart = firstDayOfMonth(state.monthCursor);
+      const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+      const startBlank = monthStart.getDay();
+      const reservations = getMyReservations();
+
+      for (let i = 0; i < startBlank; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day empty';
+        grid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= monthEnd.getDate(); d++) {
+        const date = new Date(monthStart.getFullYear(), monthStart.getMonth(), d);
+        const ymd = formatYmd(date);
+        const dayRes = reservations.filter(r => r.date === ymd);
+        const remaining = dayRes.filter(r => !isVisitDone(r));
+        const doneCount = dayRes.filter(r => isVisitDone(r)).length;
+
+        const day = document.createElement('button');
+        day.type = 'button';
+        day.className = 'day';
+
+        if (dayRes.length) day.classList.add('has-work');
+        if (!remaining.length && dayRes.length) day.classList.add('done');
+        if (isTodayYmd(ymd)) day.classList.add('today');
+
+        const strongest = remaining.reduce((acc, r) => {
+          const level = getAlertLevel(r);
+          if (level === 'danger') return 'danger';
+          if (level === 'warn' && acc !== 'danger') return 'warn';
+          return acc;
+        }, 'ok');
+
+        if (strongest === 'warn') day.classList.add('warn');
+        if (strongest === 'danger') day.classList.add('danger');
+
+        const uncheckedRemaining = remaining.filter(r => !isTimeChecked(r)).length;
+
+        let countText = '';
+        if (dayRes.length) {
+          if (remaining.length) {
+            countText = `${remaining.length}残 / ${dayRes.length}件`;
+            if (uncheckedRemaining) countText += `\n⚠️`;
+          } else {
+            countText = `完了\n${doneCount}件`;
+          }
+        }
+
+        day.innerHTML = `
+          <div class="num">${d}</div>
+          <div class="count">${countText}</div>
+        `;
+        day.addEventListener('click', () => openDay(ymd));
+        grid.appendChild(day);
+      }
+    }
+
+    function openDay(ymd) {
+      state.selectedDate = ymd;
+      resequenceForDate(ymd);
+
+      const list = sortReservationsForDate(
+        getMyReservations().filter(r => r.date === ymd)
+      );
+
+      const usesTimePriority = getDayUsesTimePriority(list);
+      const remainingCount = list.filter(r => !isVisitDone(r)).length;
+      const doneCount = list.filter(r => isVisitDone(r)).length;
+
+      document.getElementById('dayTitle').textContent = formatJapaneseDate(ymd);
+      document.getElementById('daySub').textContent = list.length
+        ? (usesTimePriority ? '時間順で固定中 / 未完了を上に表示' : '訪問順で管理中 / 未完了を上に表示')
+        : '予約なし';
+
+      document.getElementById('sumTotal').textContent = String(list.length);
+      document.getElementById('sumRemaining').textContent = String(remainingCount);
+      document.getElementById('sumDone').textContent = String(doneCount);
+
+      const dayList = document.getElementById('dayList');
+      const dayEmpty = document.getElementById('dayEmpty');
+      dayList.innerHTML = '';
+
+      if (!list.length) {
+        dayEmpty.classList.remove('hidden');
+        setScreen('screen-day');
+        return;
+      }
+
+      dayEmpty.classList.add('hidden');
+
+      list.forEach((r, idx) => {
+        const alert = getAlertLevel(r);
+        const telHref = normalizeTelHref(r.phone || '');
+        const mapHref = buildMapUrl(r.address || '');
+
+        let cardClass = 'route-card';
+        if (r.visitDone) {
+          cardClass += ' card-done';
+        } else if (alert === 'danger') {
+          cardClass += ' card-danger';
+        } else if (alert === 'warn') {
+          cardClass += ' card-warn';
+        }
+
+        const statusChip = r.status === '待機'
+          ? `<div class="status-chip wait">管理者予約：待機</div>`
+          : '';
+        const lockChip = usesTimePriority
+          ? `<div class="status-chip lock">時間入力あり：並び替え固定</div>`
+          : '';
+        const doneChip = r.visitDone
+          ? `<div class="status-chip done">訪問完了</div>`
+          : '';
+
+        const orderButtons = (usesTimePriority || r.visitDone)
+          ? ''
+          : `
+            <div class="visit-order-btns">
+              <button type="button" class="order-btn move-up" ${idx === 0 ? 'disabled' : ''}>↑</button>
+              <button type="button" class="order-btn move-down" ${idx === list.length - 1 || (list[idx + 1] && list[idx + 1].visitDone) ? 'disabled' : ''}>↓</button>
+            </div>
+          `;
+
+        const card = document.createElement('div');
+        card.className = cardClass;
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-top-left">
+              <div class="cust-name">${escapeHtml(r.customerName || '利用者名未設定')} 様</div>
+              <div class="subline">目安時間: ${escapeHtml(r.time || '未設定')}</div>
+              <div class="subline">担当: ${escapeHtml(r.staff || '未設定')}</div>
+              <div class="subline">${escapeHtml(r.address || '住所未登録')}</div>
+              ${statusChip}
+              ${lockChip}
+              ${doneChip}
+            </div>
+
+            <div class="visit-order-box">
+              <div class="visit-order-label">訪問順</div>
+              <div class="visit-order-no">${idx + 1}</div>
+              ${orderButtons}
+            </div>
+          </div>
+
+          <div class="action-row">
+            <a href="${telHref}" class="btn-link btn-tel">📞 電話</a>
+            <a href="${mapHref}" target="_blank" rel="noopener noreferrer" class="btn-link btn-map">🗺 地図を開く</a>
+            <button type="button" class="copy-btn">📋 住所コピー</button>
+          </div>
+
+          <button type="button" class="check-btn ${isTimeChecked(r) ? 'on' : ''}">
+            ${isTimeChecked(r) ? '✓ 連絡済み' : '時間連絡'}
+          </button>
+
+          <button type="button" class="done-btn ${isVisitDone(r) ? 'on' : ''}">
+            ${isVisitDone(r) ? '✓ 訪問完了' : '訪問完了'}
+          </button>
+
+          <button type="button" class="next-btn" ${state.savingNext ? 'disabled' : ''}>次回予約</button>
+        `;
+
+        const checkBtn = card.querySelector('.check-btn');
+        checkBtn.addEventListener('click', () => toggleCheckByIndex(r._rawIndex));
+
+        const doneBtn = card.querySelector('.done-btn');
+        doneBtn.addEventListener('click', () => toggleVisitDoneByIndex(r._rawIndex));
+
+        const nextBtn = card.querySelector('.next-btn');
+        nextBtn.addEventListener('click', () => openNext(r));
+
+        const copyBtn = card.querySelector('.copy-btn');
+        copyBtn.addEventListener('click', () => copyText(r.address || ''));
+
+        if (!usesTimePriority && !r.visitDone) {
+          const upBtn = card.querySelector('.move-up');
+          const downBtn = card.querySelector('.move-down');
+          if (upBtn) upBtn.addEventListener('click', () => moveVisitOrder(r._rawIndex, -1));
+          if (downBtn) downBtn.addEventListener('click', () => moveVisitOrder(r._rawIndex, 1));
+        }
+
+        dayList.appendChild(card);
+      });
+
+      setScreen('screen-day');
+    }
+
+    function toggleCheckByIndex(rawIndex) {
+      const all = loadRawReservations();
+      if (!all[rawIndex]) return;
+
+      const current = !!(all[rawIndex].timeConfirmed || all[rawIndex].timeChecked || all[rawIndex].contactChecked || all[rawIndex].precheckDone);
+      const next = !current;
+
+      all[rawIndex] = {
+        ...all[rawIndex],
+        timeConfirmed: next,
+        timeChecked: next,
+        contactChecked: next,
+        precheckDone: next
+      };
+
+      saveRawReservations(all);
+      showToast('更新しました');
+      renderCalendar();
+      if (state.selectedDate) openDay(state.selectedDate);
+    }
+
+    function toggleVisitDoneByIndex(rawIndex) {
+      const all = loadRawReservations();
+      if (!all[rawIndex]) return;
+
+      const next = !(all[rawIndex].visitDone || all[rawIndex].done || all[rawIndex].completed);
+
+      all[rawIndex] = {
+        ...all[rawIndex],
+        visitDone: next,
+        done: next,
+        completed: next
+      };
+
+      saveRawReservations(all);
+      showToast(next ? '訪問完了にしました' : '未完了に戻しました');
+      renderCalendar();
+      if (state.selectedDate) openDay(state.selectedDate);
+    }
+
+    function openNext(r) {
+      state.nextBaseDate = r.date;
+      state.nextCustomerId = r.customerId || '';
+      state.nextCustomerName = r.customerName || '';
+
+      document.getElementById('nextCustName').textContent = `${r.customerName || '利用者名未設定'} 様`;
+      document.getElementById('nextCustSub').textContent = `${formatJapaneseDate(r.date)} を基準に候補を作成`;
+
+      renderCandidateGroups(r);
+      setScreen('screen-next');
+    }
+
+    function addMonthsKeepingDay(baseDate, months) {
+      return new Date(baseDate.getFullYear(), baseDate.getMonth() + months, baseDate.getDate());
+    }
+
+    function createCandidateGroups(baseYmd) {
+      const base = parseYmd(baseYmd);
+      if (!base) return [[], [], []];
+
+      const baseWeekday = base.getDay();
+      const groups = [];
+
+      [1, 2, 3].forEach(months => {
+        const target = addMonthsKeepingDay(base, months);
+        const candidate1 = new Date(target);
+        const diff = baseWeekday - candidate1.getDay();
+        candidate1.setDate(candidate1.getDate() + diff);
+
+        const candidate2 = new Date(candidate1);
+        const candidate3 = new Date(candidate1);
+        candidate2.setDate(candidate2.getDate() + 7);
+        candidate3.setDate(candidate3.getDate() + 14);
+
+        groups.push([candidate1, candidate2, candidate3].map(d => ({
+          ymd: formatYmd(d),
+          label: formatJapaneseDate(formatYmd(d)),
+          sameWeekday: d.getDay() === baseWeekday
+        })));
+      });
+
+      return groups;
+    }
+
+    function findCustomerRecord(customerId, customerName) {
+      const customers = loadCustomers();
+      if (customerId) {
+        const byId = customers.find(c => normalizeCustomerId(c) === customerId);
+        if (byId) return byId;
+      }
+      if (customerName) {
+        const byName = customers.find(c => String(c.name ?? c.customerName ?? c.customer_name ?? '').trim() === customerName);
+        if (byName) return byName;
+      }
+      return null;
+    }
+
+    function buildPendingKey(customerId, customerName, sourceDate, createdByStaff) {
+      const cid = String(customerId || '').trim();
+      const cname = String(customerName || '').trim();
+      const baseCustomer = cid || cname || 'unknown_customer';
+      return `${baseCustomer}__${String(sourceDate || '').trim()}__${normalizeStaffName(createdByStaff)}`;
+    }
+
+    function restoreLastSavedReservation() {
+      if (!state.lastSavedReservationSnapshot) return;
+      saveRawReservations(JSON.parse(JSON.stringify(state.lastSavedReservationSnapshot)));
+      showToast('元に戻しました');
+      renderCalendar();
+      if (state.selectedDate) openDay(state.selectedDate);
+      else setScreen('screen-calendar');
+    }
+
+    function saveNextReservation(dateYmd) {
+      if (state.savingNext) return;
+      state.savingNext = true;
+
+      try {
+        const before = loadRawReservations();
+        state.lastSavedReservationSnapshot = JSON.parse(JSON.stringify(before));
+
+        const all = JSON.parse(JSON.stringify(before));
+        const customer = findCustomerRecord(state.nextCustomerId, state.nextCustomerName);
+
+        const normalizedCustomerId = state.nextCustomerId || normalizeCustomerId(customer) || '';
+        const customerName = state.nextCustomerName || String(
+          customer?.name ??
+          customer?.customerName ??
+          customer?.customer_name ??
+          ''
+        ).trim();
+
+        const address = String(
+          customer?.address ??
+          customer?.customerAddress ??
+          ''
+        ).trim();
+
+        const phone = String(
+          customer?.phone ??
+          customer?.tel ??
+          customer?.customerPhone ??
+          ''
+        ).trim();
+
+        const pendingKey = buildPendingKey(
+          normalizedCustomerId,
+          customerName,
+          state.nextBaseDate,
+          state.currentStaff
+        );
+
+        const nextRecord = {
+          date: dateYmd,
+          customerId: normalizedCustomerId,
+          customerName,
+          address,
+          phone,
+          staff: '管理者',
+          time: '',
+          timeConfirmed: false,
+          timeChecked: false,
+          contactChecked: false,
+          precheckDone: false,
+          visitDone: false,
+          done: false,
+          completed: false,
+          sourceDate: state.nextBaseDate,
+          createdByStaff: state.currentStaff,
+          status: '待機',
+          pendingKey: pendingKey
+        };
+
+        const existingIndex = all.findIndex(item =>
+          String(item.pendingKey ?? '').trim() === pendingKey
+        );
+
+        if (existingIndex >= 0) {
+          all[existingIndex] = {
+            ...all[existingIndex],
+            ...nextRecord
+          };
+        } else {
+          all.push(nextRecord);
+        }
+
+        saveRawReservations(all);
+        renderCalendar();
+        setScreen('screen-calendar');
+
+        showUndoToast('保存しました', () => {
+          restoreLastSavedReservation();
+        });
+      } finally {
+        state.savingNext = false;
+      }
+    }
+
+    function renderCandidateGroups(r) {
+      const groups = createCandidateGroups(r.date);
+      ['group1', 'group2', 'group3'].forEach((id, idx) => {
+        const wrap = document.getElementById(id);
+        wrap.innerHTML = '';
+        groups[idx].forEach(item => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'candidate-btn' + (item.sameWeekday ? ' same-weekday' : '');
+          btn.disabled = state.savingNext;
+          btn.innerHTML = `
+            <div class="candidate-big">${escapeHtml(item.label)}</div>
+            <div class="candidate-small">タップで管理者予約（待機）として保存</div>
+            ${item.sameWeekday ? '<div class="same-weekday-badge">同じ曜日</div>' : ''}
+          `;
+          btn.addEventListener('click', () => saveNextReservation(item.ymd));
+          wrap.appendChild(btn);
+        });
+      });
+    }
+
+    function initEvents() {
+      document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth() - 1, 1);
+        renderCalendar();
+      });
+
+      document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth() + 1, 1);
+        renderCalendar();
+      });
+
+      document.getElementById('backCalendarBtn').addEventListener('click', () => {
+        setScreen('screen-calendar');
+      });
+
+      document.getElementById('backDayBtn').addEventListener('click', () => {
+        if (state.selectedDate) openDay(state.selectedDate);
+        else setScreen('screen-calendar');
+      });
+
+      window.addEventListener('storage', () => {
+        renderCalendar();
+        if (state.selectedDate) openDay(state.selectedDate);
+      });
+    }
+
+    function init() {
+      const params = new URLSearchParams(location.search);
+      state.currentStaff = String(params.get('staff') || params.get('name') || '').trim();
+      state.currentStaffKey = normalizeStaffName(state.currentStaff);
+
+      if (!state.currentStaffKey) {
+        document.getElementById('error-no-staff').classList.remove('hidden');
+        document.getElementById('screen-calendar').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('staffDisplay').textContent = `担当: ${state.currentStaff}`;
+      initEvents();
+      renderCalendar();
+      setScreen('screen-calendar');
+    }
+
+    init();
+  </script>
+</body>
+</html>
