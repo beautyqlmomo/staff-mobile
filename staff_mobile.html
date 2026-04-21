@@ -398,7 +398,7 @@
           <h1 class="title">beautyql staff mobile</h1>
           <p class="sub">スタッフ別の予約をカレンダー表示します</p>
         </div>
-        <div class="staff-pill" id="staffPill">スタッフ未選択</div>
+        <div class="staff-pill" id="staffPill">全件表示</div>
       </div>
 
       <div class="summary">
@@ -438,7 +438,7 @@
       <h2 class="day-title" id="dayTitle">日付を選択してください</h2>
       <div class="day-meta">
         <div class="meta-chip" id="dayCountChip">0件</div>
-        <div class="meta-chip" id="dayStaffChip">スタッフ未選択</div>
+        <div class="meta-chip" id="dayStaffChip">全件表示</div>
       </div>
     </div>
 
@@ -452,7 +452,6 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx_G2RwPFC6xgjcdQBgDpqjnuWF0c11S7I1W1u-I8n6C7HoJbvLqKOBpIRIMaLnQgZZ/exec";
     const WEEKDAYS = ["日","月","火","水","木","金","土"];
 
     const state = {
@@ -485,23 +484,27 @@
 
     function normalizeDate(value){
       if(value == null) return "";
-      const s = String(value).trim();
-      if(!s) return "";
 
-      const m1 = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-      if(m1){
-        return `${m1[1]}-${String(m1[2]).padStart(2,"0")}-${String(m1[3]).padStart(2,"0")}`;
+      if(typeof value === "string"){
+        const s = value.trim();
+        if(!s) return "";
+
+        const m1 = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+        if(m1){
+          return `${m1[1]}-${String(m1[2]).padStart(2,"0")}-${String(m1[3]).padStart(2,"0")}`;
+        }
+
+        const m2 = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
+        if(m2){
+          return `${m2[1]}-${String(m2[2]).padStart(2,"0")}-${String(m2[3]).padStart(2,"0")}`;
+        }
+
+        const dt = new Date(s);
+        if(!Number.isNaN(dt.getTime())){
+          return ymd(dt);
+        }
       }
 
-      const m2 = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
-      if(m2){
-        return `${m2[1]}-${String(m2[2]).padStart(2,"0")}-${String(m2[3]).padStart(2,"0")}`;
-      }
-
-      const dt = new Date(s);
-      if(!Number.isNaN(dt.getTime())){
-        return ymd(dt);
-      }
       return "";
     }
 
@@ -515,25 +518,30 @@
 
     function normalizeTime(value){
       if(value == null) return "";
-      const s = String(value).trim();
-      if(!s) return "";
 
-      const m = s.match(/^(\d{1,2}):(\d{1,2})/);
-      if(m){
-        return `${String(m[1]).padStart(2,"0")}:${String(m[2]).padStart(2,"0")}`;
+      if(typeof value === "string"){
+        const s = value.trim();
+        if(!s) return "";
+
+        const m = s.match(/^(\d{1,2}):(\d{1,2})/);
+        if(m){
+          return `${String(m[1]).padStart(2,"0")}:${String(m[2]).padStart(2,"0")}`;
+        }
+
+        const m2 = s.match(/^(\d{1,2})時(\d{1,2})?分?$/);
+        if(m2){
+          return `${String(m2[1]).padStart(2,"0")}:${String(m2[2] || "0").padStart(2,"0")}`;
+        }
+
+        const dt = new Date(s);
+        if(!Number.isNaN(dt.getTime())){
+          return `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+        }
+
+        return s;
       }
 
-      const m2 = s.match(/^(\d{1,2})時(\d{1,2})?分?$/);
-      if(m2){
-        return `${String(m2[1]).padStart(2,"0")}:${String(m2[2] || "0").padStart(2,"0")}`;
-      }
-
-      const dt = new Date(s);
-      if(!Number.isNaN(dt.getTime())){
-        return `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-      }
-
-      return s;
+      return "";
     }
 
     function pick(obj, keys){
@@ -592,7 +600,7 @@
       );
     }
 
-    function normalizeReservation(obj){
+    function normalizeReservation(obj, index){
       const staffRaw = pick(obj, [
         "staff","staffName","staff_name","staff_id","staffId","担当","担当者"
       ]);
@@ -604,7 +612,7 @@
       const checked = isChecked(obj);
 
       return {
-        id: String(pick(obj, ["reservationId","reservation_id","id","ID"])).trim(),
+        id: String(pick(obj, ["reservationId","reservation_id","id","ID"])).trim() || String(index + 1),
         customerId: String(pick(obj, ["customerId","customer_id","customerID"])).trim(),
         name: String(pick(obj, ["name","customerName","customer_name","利用者氏名","利用者名"])).trim() || "利用者名未設定",
         address: String(pick(obj, ["address","customerAddress","住所"])).trim() || "住所未登録",
@@ -613,19 +621,11 @@
         time: normalizeTime(pick(obj, ["time","visit_time","visitTime","reservation_time","reservationTime","start_time","startTime"])),
         staff: normalizeStaffValue(staffRaw),
         status: String(pick(obj, ["status","状態"])).trim() || "予約済",
-        menu: String(pick(obj, ["menu","service","施術内容"])).trim(),
-        route: toNumber(routeRaw, 9999),
+        menu: String(pick(obj, ["menu","service","施術内容"])).trim() || "施術内容未設定",
+        route: toNumber(routeRaw, index + 1),
         checked: checked,
         raw: obj
       };
-    }
-
-    function normalizeApiRows(json){
-      if(Array.isArray(json)) return json;
-      if(Array.isArray(json.data)) return json.data;
-      if(Array.isArray(json.items)) return json.items;
-      if(Array.isArray(json.reservations)) return json.reservations;
-      throw new Error("JSON形式は取得できましたが、配列データが見つかりません。");
     }
 
     function getStaffFromQuery(){
@@ -689,14 +689,20 @@
     function renderStaffSelect(){
       const select = $("staffSelect");
       const current = state.selectedStaff;
-      const options = [`<option value="">スタッフを選択</option>`]
-        .concat(state.staffList.map(name => {
-          const selected = name === current ? " selected" : "";
-          return `<option value="${escapeHtml(name)}"${selected}>${escapeHtml(name)}</option>`;
-        }));
+      const hasStaff = state.staffList.length > 0;
+
+      const options = hasStaff
+        ? [`<option value="">全件表示</option>`].concat(
+            state.staffList.map(name => {
+              const selected = name === current ? " selected" : "";
+              return `<option value="${escapeHtml(name)}"${selected}>${escapeHtml(name)}</option>`;
+            })
+          )
+        : [`<option value="">全件表示</option>`];
+
       select.innerHTML = options.join("");
 
-      const label = current || "スタッフ未選択";
+      const label = current || "全件表示";
       $("staffPill").textContent = label;
       $("dayStaffChip").textContent = label;
     }
@@ -789,7 +795,7 @@
         return `
           <div class="job-card">
             <div class="job-top">
-              <div class="route-badge">${escapeHtml(String(item.route === 9999 ? idx + 1 : item.route))}番</div>
+              <div class="route-badge">${escapeHtml(String(item.route || (idx + 1)))}番</div>
               <div class="name-block">
                 <h3 class="customer-name">${escapeHtml(item.name)}</h3>
                 <div class="time-text">${escapeHtml(item.time || "時間未設定")} / ${escapeHtml(item.menu || "施術内容未設定")}</div>
@@ -885,15 +891,13 @@
       const queryStaff = getStaffFromQuery();
       if(queryStaff && state.staffList.includes(queryStaff)){
         state.selectedStaff = queryStaff;
-      }else if(state.staffList.length === 1){
-        state.selectedStaff = state.staffList[0];
       }else{
-        state.selectedStaff = state.staffList[0] || "";
+        state.selectedStaff = "";
       }
     }
 
     async function fetchApi(){
-      const res = await fetch(API_URL + "?t=" + Date.now(), {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxNmHMwmRle_qcRkwp6rmPHfuB5QqUg5Ks-5UuGjIJJNQekbMd4NPymsFnJn9VYUyn3Dww/exec?t=" + Date.now(), {
         method:"GET",
         headers:{ "Accept":"application/json" }
       });
@@ -902,8 +906,13 @@
         throw new Error(`API取得失敗: ${res.status} ${res.statusText}`);
       }
 
-      const json = await res.json();
-      return normalizeApiRows(json);
+      const data = await res.json();
+
+      if(!Array.isArray(data)){
+        throw new Error("APIの返却が配列ではありません。");
+      }
+
+      return data;
     }
 
     function bindEvents(){
@@ -941,25 +950,14 @@
       try{
         const data = await fetchApi();
 
-        if(!Array.isArray(data)){
-          throw new Error("APIの返却が配列ではありません。");
-        }
-
-        if(data.length > 0 && Array.isArray(data[0])){
-          throw new Error(
-            "APIが配列の配列を返しています。\n" +
-            "このHTMLはオブジェクト配列前提です。\n" +
-            "GAS側を修正してください。"
-          );
-        }
-
         state.raw = data;
-        state.normalized = data.map(normalizeReservation).filter(item => item.date);
+        state.normalized = data.map((item, index) => normalizeReservation(item, index)).filter(item => item.date);
         state.staffList = buildStaffList(state.normalized);
         applyInitialStaff();
         ensureSelectedDate();
         bindEvents();
         renderAll();
+
         $("loadingBox").style.display = "none";
       }catch(err){
         $("loadingBox").style.display = "none";
