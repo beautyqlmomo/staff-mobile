@@ -27,23 +27,38 @@
       color:var(--text);
       font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
     }
-    button,input,select{font:inherit}
+    button,input,select,textarea{font:inherit}
+    a{text-decoration:none;color:inherit}
     .page{
       width:100%;
       max-width:720px;
       margin:0 auto;
       min-height:100vh;
-      padding:14px 14px 28px;
+      padding:72px 14px 28px;
     }
-    .top-card,.calendar-card,.list-card,.day-header,.empty,.job-card{
+    .back-btn{
+      position:fixed;
+      top:12px;
+      left:12px;
+      z-index:1000;
+      min-width:92px;
+      height:44px;
+      border:none;
+      border-radius:12px;
+      background:#2f261d;
+      color:#fff;
+      font-weight:700;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+    }
+    .top-card,.calendar-card,.day-header,.list-card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:20px;
       box-shadow:var(--shadow);
+      padding:14px;
+      margin-bottom:14px;
     }
-    .top-card,.calendar-card,.list-card,.day-header{padding:14px}
-    .top-card{margin-bottom:14px}
-    .calendar-card,.list-card,.day-header{margin-bottom:14px}
     .title-row{
       display:flex;
       align-items:flex-start;
@@ -76,6 +91,7 @@
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:10px;
+      margin-top:12px;
     }
     .summary-card{
       border:1px solid var(--line);
@@ -116,12 +132,12 @@
       color:var(--text);
       flex:1 1 220px;
     }
-    .toolbar .month-nav{
+    .month-nav{
       display:flex;
       align-items:center;
       gap:8px;
     }
-    .toolbar .month-btn{
+    .month-btn{
       width:42px;
       height:42px;
       border:none;
@@ -181,9 +197,9 @@
       position:relative;
       padding:4px;
     }
-    .day.other{
-      opacity:.32;
+    .day.empty{
       background:#faf8f4;
+      opacity:.4;
       cursor:default;
     }
     .day.has-job{
@@ -215,9 +231,6 @@
       line-height:1;
       font-weight:700;
     }
-    .day-header{
-      padding:16px;
-    }
     .day-title{
       margin:0 0 6px;
       font-size:22px;
@@ -239,6 +252,9 @@
       font-weight:700;
     }
     .job-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
       padding:14px;
       margin-bottom:12px;
       box-shadow:0 4px 14px rgba(63,42,14,.05);
@@ -330,27 +346,66 @@
       color:#195cc1;
       text-decoration:underline;
     }
-    .action-row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
+    .check-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       gap:10px;
-      margin-top:12px;
-    }
-    .action-btn{
-      min-height:46px;
-      border:none;
+      background:#faf8f4;
+      border:1px solid var(--line);
       border-radius:14px;
+      padding:12px;
+      margin-top:8px;
+    }
+    .check-left{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .check-title{
+      font-size:14px;
       font-weight:800;
+      margin:0;
+    }
+    .check-desc{
+      font-size:12px;
+      color:var(--sub);
+      margin:0;
+      line-height:1.4;
+    }
+    .toggle{
+      position:relative;
+      width:58px;
+      height:34px;
+      flex:0 0 auto;
+    }
+    .toggle input{display:none}
+    .slider{
+      position:absolute;
+      inset:0;
+      background:#d9cec0;
+      border-radius:999px;
+      transition:.2s;
       cursor:pointer;
-      box-shadow:0 4px 12px rgba(63,42,14,.06);
     }
-    .primary{
-      background:#2f261d;
-      color:#fff;
+    .slider::before{
+      content:"";
+      position:absolute;
+      width:26px;
+      height:26px;
+      left:4px;
+      top:4px;
+      border-radius:50%;
+      background:#fff;
+      transition:.2s;
+      box-shadow:0 2px 6px rgba(0,0,0,.18);
     }
-    .secondary{
-      background:#f0e4ce;
-      color:#6c4e18;
+    .toggle input:checked + .slider{
+      background:var(--ok);
+    }
+    .toggle input:checked + .slider::before{
+      transform:translateX(24px);
     }
     .empty{
       padding:24px 14px;
@@ -360,445 +415,510 @@
       border:1px dashed var(--line);
       border-radius:16px;
     }
-    .loading,.error-box{
-      padding:14px;
-      border-radius:14px;
-      margin-bottom:14px;
-      font-weight:700;
-    }
-    .loading{
-      background:#fffaf0;
-      border:1px solid #ecd7a5;
-      color:#8f6a22;
-    }
     .error-box{
-      background:var(--danger-bg);
+      background:#fff1f1;
+      color:#b42318;
       border:1px solid #f0b6b6;
-      color:var(--danger);
-      white-space:pre-wrap;
+      border-radius:16px;
+      padding:14px;
+      font-weight:700;
       line-height:1.6;
+      margin-bottom:14px;
+      display:none;
+      white-space:pre-line;
     }
-    @media (max-width:480px){
-      .title{font-size:20px}
-      .summary-value{font-size:20px}
+    @media (max-width:420px){
+      .summary{grid-template-columns:1fr 1fr 1fr}
+      .summary-value{font-size:21px}
       .customer-name{font-size:17px}
-      .day{min-height:46px}
-      .action-row{grid-template-columns:1fr}
+      .route-badge{min-width:48px}
+      .month-label{min-width:110px}
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div id="loadingBox" class="loading">読込中...</div>
-    <div id="errorBox" class="error-box" style="display:none;"></div>
+  <button class="back-btn" onclick="history.back()">← 戻る</button>
 
-    <div class="top-card">
+  <div class="page">
+    <section class="top-card">
       <div class="title-row">
         <div>
-          <h1 class="title">beautyql staff mobile</h1>
-          <p class="sub">スタッフ別の予約をカレンダー表示します</p>
+          <h1 class="title">スタッフ画面</h1>
+          <p class="sub">カレンダーで仕事日を確認し、対象日を開いて利用者情報と時間連絡状況を確認します。</p>
         </div>
-        <div class="staff-pill" id="staffPill">全件表示</div>
+        <div id="staffPill" class="staff-pill">スタッフ未設定</div>
       </div>
 
       <div class="summary">
         <div class="summary-card">
-          <div class="summary-label">今月件数</div>
-          <div class="summary-value" id="summaryMonth">0</div>
+          <div class="summary-label">今月の仕事日</div>
+          <div id="monthWorkDays" class="summary-value">0</div>
         </div>
         <div class="summary-card danger">
-          <div class="summary-label">3日前未確認</div>
-          <div class="summary-value" id="summaryUnchecked">0</div>
+          <div class="summary-label">選択日の件数</div>
+          <div id="selectedCount" class="summary-value">0</div>
         </div>
         <div class="summary-card ok">
-          <div class="summary-label">今日件数</div>
-          <div class="summary-value" id="summaryToday">0</div>
+          <div class="summary-label">時間連絡済</div>
+          <div id="checkedCount" class="summary-value">0</div>
         </div>
       </div>
 
       <div class="toolbar">
-        <select id="staffSelect"></select>
         <div class="month-nav">
-          <button id="prevMonthBtn" class="month-btn" type="button">‹</button>
-          <div id="monthLabel" class="month-label"></div>
-          <button id="nextMonthBtn" class="month-btn" type="button">›</button>
+          <button class="month-btn" id="prevMonthBtn" type="button">‹</button>
+          <div id="monthLabel" class="month-label">----</div>
+          <button class="month-btn" id="nextMonthBtn" type="button">›</button>
+        </div>
+        <select id="staffSelect"></select>
+      </div>
+    </section>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <section class="calendar-card">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">仕事日カレンダー</h2>
+          <p class="section-note">色が付いている日が仕事日です。タップするとその日の利用者一覧を表示します。</p>
         </div>
       </div>
-    </div>
-
-    <div class="calendar-card">
-      <div class="section-head">
-        <h2 class="section-title">カレンダー</h2>
-        <p class="section-note">赤い日は予約あり</p>
-      </div>
+      <div class="calendar-grid" id="weekdayRow"></div>
       <div class="calendar-grid" id="calendarGrid"></div>
-    </div>
+    </section>
 
-    <div class="day-header">
-      <h2 class="day-title" id="dayTitle">日付を選択してください</h2>
+    <section class="day-header" id="dayHeader">
+      <h2 class="day-title" id="selectedDateTitle">日付を選択してください</h2>
       <div class="day-meta">
-        <div class="meta-chip" id="dayCountChip">0件</div>
-        <div class="meta-chip" id="dayStaffChip">全件表示</div>
+        <div class="meta-chip" id="selectedDateCount">利用者 0名</div>
+        <div class="meta-chip" id="selectedDateChecked">時間連絡済 0件</div>
       </div>
-    </div>
+    </section>
 
-    <div class="list-card">
+    <section class="list-card">
       <div class="section-head">
-        <h2 class="section-title">当日の予約</h2>
-        <p class="section-note">訪問順に表示</p>
+        <div>
+          <h2 class="section-title">訪問順・利用者一覧</h2>
+          <p class="section-note">時間が未確定でも表示されます。3日前確認の記録だけこの画面で保存できます。</p>
+        </div>
       </div>
       <div id="jobsWrap"></div>
-    </div>
+    </section>
   </div>
 
   <script>
-    const WEEKDAYS = ["日","月","火","水","木","金","土"];
+    const API_URL = "https://script.google.com/macros/s/AKfycbxNmHMwmRle_qcRkwp6rmPHfuB5QqUg5Ks-5UuGjIJNQekbMd4NPymsFnJn9VYUn3Dww/exec";
 
-    const state = {
-      raw: [],
-      normalized: [],
-      staffList: [],
-      selectedStaff: "",
-      selectedDate: "",
-      viewDate: new Date(),
-      eventsBound: false
+    const WEEKDAYS = ["日","月","火","水","木","金","土"];
+    const STORAGE_KEYS = {
+      reservations: "beautyql_reservations"
     };
 
-    const $ = (id) => document.getElementById(id);
+    const state = {
+      reservations: [],
+      monthCursor: firstDayOfMonth(new Date()),
+      selectedDate: todayYmd(),
+      currentStaff: ""
+    };
 
-    function escapeHtml(v){
-      return String(v ?? "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#39;");
+    function todayYmd() {
+      return formatYmd(new Date());
     }
 
-    function ymd(date){
+    function formatYmd(date) {
       const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2,"0");
-      const d = String(date.getDate()).padStart(2,"0");
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
     }
 
-    function normalizeDate(value){
-      if(value == null) return "";
-
-      if(typeof value === "string"){
-        const s = value.trim();
-        if(!s) return "";
-
-        const m1 = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
-        if(m1){
-          return `${m1[1]}-${String(m1[2]).padStart(2,"0")}-${String(m1[3]).padStart(2,"0")}`;
-        }
-
-        const m2 = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
-        if(m2){
-          return `${m2[1]}-${String(m2[2]).padStart(2,"0")}-${String(m2[3]).padStart(2,"0")}`;
-        }
-
-        const dt = new Date(s);
-        if(!Number.isNaN(dt.getTime())){
-          return ymd(dt);
-        }
-      }
-
-      return "";
-    }
-
-    function parseYmd(value){
-      const s = normalizeDate(value);
-      if(!s) return null;
-      const [y,m,d] = s.split("-").map(Number);
+    function parseYmd(ymd) {
+      if (!ymd) return null;
+      const s = normalizeDate(ymd);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+      const [y, m, d] = s.split("-").map(Number);
       const dt = new Date(y, m - 1, d);
       return Number.isNaN(dt.getTime()) ? null : dt;
     }
 
-    function normalizeTime(value){
-      if(value == null) return "";
+    function firstDayOfMonth(date) {
+      return new Date(date.getFullYear(), date.getMonth(), 1);
+    }
 
-      if(typeof value === "string"){
-        const s = value.trim();
-        if(!s) return "";
+    function getMonthLabel(date) {
+      return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+    }
 
-        const m = s.match(/^(\d{1,2}):(\d{1,2})/);
-        if(m){
-          return `${String(m[1]).padStart(2,"0")}:${String(m[2]).padStart(2,"0")}`;
-        }
+    function getJapaneseDateLabel(ymd) {
+      const dt = parseYmd(ymd);
+      if (!dt) return ymd || "";
+      return `${dt.getFullYear()}年${dt.getMonth() + 1}月${dt.getDate()}日（${WEEKDAYS[dt.getDay()]}）`;
+    }
 
-        const m2 = s.match(/^(\d{1,2})時(\d{1,2})?分?$/);
-        if(m2){
-          return `${String(m2[1]).padStart(2,"0")}:${String(m2[2] || "0").padStart(2,"0")}`;
-        }
+    function escapeHtml(v) {
+      return String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
 
-        const dt = new Date(s);
-        if(!Number.isNaN(dt.getTime())){
-          return `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-        }
+    function normalizeDate(value) {
+      if (!value) return "";
+      if (Object.prototype.toString.call(value) === "[object Date]" && !Number.isNaN(value.getTime())) {
+        return formatYmd(value);
+      }
+      const s = String(value).trim();
 
-        return s;
+      let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+      if (m) {
+        return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
+      }
+
+      m = s.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日$/);
+      if (m) {
+        return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
+      }
+
+      const d = new Date(s);
+      if (!Number.isNaN(d.getTime())) {
+        return formatYmd(d);
       }
 
       return "";
     }
 
-    function pick(obj, keys){
-      for(const key of keys){
-        if(obj && obj[key] != null && String(obj[key]).trim() !== ""){
-          return obj[key];
-        }
+    function normalizeTime(value) {
+      if (!value) return "";
+      const s = String(value).trim();
+      const m = s.match(/^(\d{1,2}):(\d{1,2})/);
+      if (m) {
+        return `${String(m[1]).padStart(2,"0")}:${String(m[2]).padStart(2,"0")}`;
       }
-      return "";
+      return s;
     }
 
-    function normalizeStaffValue(v){
-      return String(v ?? "").trim();
+    function readStaffFromQuery() {
+      const qp = new URLSearchParams(location.search);
+      return (qp.get("staff") || qp.get("staff_id") || "").trim();
     }
 
-    function toNumber(v, fallback = 9999){
-      const n = Number(v);
-      return Number.isFinite(n) ? n : fallback;
-    }
+    function normalizeRow(raw) {
+      const customerName = String(
+        raw.customerName ??
+        raw.customer_name ??
+        raw.name ??
+        raw.利用者氏名 ??
+        raw.氏名 ??
+        ""
+      ).trim();
 
-    function formatJapaneseDate(value){
-      const dt = parseYmd(value);
-      if(!dt) return "";
-      return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${WEEKDAYS[dt.getDay()]}）`;
-    }
+      const address = String(
+        raw.address ??
+        raw.customerAddress ??
+        raw.住所 ??
+        ""
+      ).trim();
 
-    function monthLabel(date){
-      return `${date.getFullYear()}年${date.getMonth()+1}月`;
-    }
+      const phone = String(
+        raw.phone ??
+        raw.tel ??
+        raw.customerPhone ??
+        raw.電話番号 ??
+        ""
+      ).trim();
 
-    function getToday(){
-      return ymd(new Date());
-    }
+      const staff = String(
+        raw.staff ??
+        raw.staffName ??
+        raw.担当者 ??
+        raw.スタッフ ??
+        ""
+      ).trim();
 
-    function isWithinUpcomingThreeDays(dateStr){
-      const dt = parseYmd(dateStr);
-      if(!dt) return false;
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const target = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-      const diff = Math.floor((target.getTime() - today.getTime()) / 86400000);
-      return diff >= 0 && diff <= 3;
-    }
-
-    function isChecked(item){
-      return Boolean(
-        item.time_contact_checked === true ||
-        item.timeContactChecked === true ||
-        item.staff_mobile_time_contact_checked === true ||
-        String(item.time_contact_checked).toLowerCase() === "true" ||
-        String(item.timeContactChecked).toLowerCase() === "true" ||
-        String(item.staff_mobile_time_contact_checked).toLowerCase() === "true" ||
-        String(item.time_contact_checked) === "1" ||
-        String(item.timeContactChecked) === "1" ||
-        String(item.staff_mobile_time_contact_checked) === "1"
+      const date = normalizeDate(
+        raw.date ??
+        raw.visitDate ??
+        raw.reservationDate ??
+        raw.予約日 ??
+        raw.訪問日 ??
+        ""
       );
-    }
 
-    function normalizeReservation(obj, index){
-      const staffRaw = pick(obj, [
-        "staff","staffName","staff_name","staff_id","staffId","担当","担当者"
-      ]);
+      const time = normalizeTime(
+        raw.time ??
+        raw.visitTime ??
+        raw.reservationTime ??
+        raw.予約時間 ??
+        raw.訪問時間 ??
+        ""
+      );
 
-      const routeRaw = pick(obj, [
-        "visitOrder","visit_order","route_order","routeOrder","order","sort","sort_order"
-      ]);
+      const routeOrderRaw =
+        raw.routeOrder ??
+        raw.route_order ??
+        raw.visitOrder ??
+        raw.visit_order ??
+        raw.order ??
+        raw.順番 ??
+        raw.訪問順;
 
-      const checked = isChecked(obj);
+      const routeOrder = Number.isFinite(Number(routeOrderRaw)) ? Number(routeOrderRaw) : 9999;
+
+      const status = String(raw.status ?? raw.状態 ?? "予約済").trim();
+
+      const checked =
+        raw.timeConfirmed === true ||
+        raw.timeConfirmed === "true" ||
+        raw.timeConfirmed === 1 ||
+        raw.timeChecked === true ||
+        raw.timeChecked === "true" ||
+        raw.timeChecked === 1 ||
+        raw.contactChecked === true ||
+        raw.contactChecked === "true" ||
+        raw.contactChecked === 1 ||
+        raw.precheckDone === true ||
+        raw.precheckDone === "true" ||
+        raw.precheckDone === 1;
 
       return {
-        id: String(pick(obj, ["reservationId","reservation_id","id","ID"])).trim() || String(index + 1),
-        customerId: String(pick(obj, ["customerId","customer_id","customerID"])).trim(),
-        name: String(pick(obj, ["name","customerName","customer_name","利用者氏名","利用者名"])).trim() || "利用者名未設定",
-        address: String(pick(obj, ["address","customerAddress","住所"])).trim() || "住所未登録",
-        phone: String(pick(obj, ["phone","tel","telephone","customerPhone","電話番号"])).trim() || "",
-        date: normalizeDate(pick(obj, ["date","reservation_date","reservationDate","visit_date","visitDate","day"])),
-        time: normalizeTime(pick(obj, ["time","visit_time","visitTime","reservation_time","reservationTime","start_time","startTime"])),
-        staff: normalizeStaffValue(staffRaw),
-        status: String(pick(obj, ["status","状態"])).trim() || "予約済",
-        menu: String(pick(obj, ["menu","service","施術内容"])).trim() || "施術内容未設定",
-        route: toNumber(routeRaw, index + 1),
-        checked: checked,
-        raw: obj
+        id: String(raw.id ?? raw.ID ?? `${date}_${staff}_${customerName}_${time}`).trim(),
+        customerName,
+        address,
+        phone,
+        staff,
+        date,
+        time,
+        routeOrder,
+        status,
+        checked,
+        raw
       };
     }
 
-    function getStaffFromQuery(){
-      const qp = new URLSearchParams(location.search);
-      return normalizeStaffValue(qp.get("staff") || qp.get("staff_id") || qp.get("name"));
-    }
-
-    function buildStaffList(list){
-      const set = new Set();
-      list.forEach(item => {
-        if(item.staff && item.staff !== "管理者"){
-          set.add(item.staff);
+    function normalizeApiData(payload) {
+      if (Array.isArray(payload)) {
+        if (payload.length > 0 && Array.isArray(payload[0])) {
+          const headers = payload[0].map(h => String(h || "").trim());
+          return payload.slice(1)
+            .filter(row => Array.isArray(row))
+            .map(row => {
+              const obj = {};
+              headers.forEach((h, i) => {
+                if (!h) return;
+                obj[h] = row[i];
+              });
+              return obj;
+            });
         }
-      });
-      return [...set].sort((a,b) => a.localeCompare(b, "ja"));
+        return payload;
+      }
+
+      if (payload && Array.isArray(payload.data)) {
+        return payload.data;
+      }
+
+      return [];
     }
 
-    function getFilteredReservations(){
-      return state.normalized
-        .filter(item => item.date)
-        .filter(item => !state.selectedStaff || item.staff === state.selectedStaff);
+    function showError(message) {
+      const box = document.getElementById("errorBox");
+      box.style.display = "block";
+      box.textContent = message;
     }
 
-    function getReservationsByDate(dateStr){
-      return getFilteredReservations()
-        .filter(item => item.date === dateStr)
+    function hideError() {
+      const box = document.getElementById("errorBox");
+      box.style.display = "none";
+      box.textContent = "";
+    }
+
+    async function fetchReservations() {
+      try {
+        const url = API_URL + (API_URL.includes("?") ? "&" : "?") + "t=" + Date.now();
+        const res = await fetch(url, { method: "GET", cache: "no-store" });
+
+        if (!res.ok) {
+          throw new Error("GASの取得に失敗しました HTTP " + res.status);
+        }
+
+        const payload = await res.json();
+        const arr = normalizeApiData(payload);
+
+        return arr.map(normalizeRow).filter(r => r.date);
+      } catch (error) {
+        throw new Error(error.message || "Failed to fetch");
+      }
+    }
+
+    function saveLocalReservations(list) {
+      localStorage.setItem(STORAGE_KEYS.reservations, JSON.stringify(list));
+    }
+
+    function loadLocalReservations() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.reservations);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getStaffList() {
+      const names = [...new Set(
+        state.reservations
+          .map(r => String(r.staff || "").trim())
+          .filter(Boolean)
+          .filter(v => v !== "管理者")
+      )].sort((a,b) => a.localeCompare(b, "ja"));
+
+      return names;
+    }
+
+    function setupStaffSelect() {
+      const select = document.getElementById("staffSelect");
+      const staffs = getStaffList();
+      const queryStaff = readStaffFromQuery();
+
+      if (!state.currentStaff) {
+        if (queryStaff && staffs.includes(queryStaff)) {
+          state.currentStaff = queryStaff;
+        } else {
+          state.currentStaff = staffs[0] || "";
+        }
+      }
+
+      select.innerHTML = staffs.map(name => {
+        const selected = name === state.currentStaff ? "selected" : "";
+        return `<option value="${escapeHtml(name)}" ${selected}>${escapeHtml(name)}</option>`;
+      }).join("");
+
+      select.onchange = () => {
+        state.currentStaff = select.value;
+        renderAll();
+      };
+
+      document.getElementById("staffPill").textContent = state.currentStaff || "スタッフ未設定";
+    }
+
+    function getVisibleReservations() {
+      return state.reservations
+        .filter(r => r.staff === state.currentStaff)
+        .filter(r => !["キャンセル", "cancel", "canceled"].includes(String(r.status || "").toLowerCase()));
+    }
+
+    function getReservationsByDate(dateKey) {
+      return getVisibleReservations()
+        .filter(r => r.date === dateKey)
         .sort((a,b) => {
-          if(a.route !== b.route) return a.route - b.route;
-          return String(a.time).localeCompare(String(b.time), "ja");
+          if (a.routeOrder !== b.routeOrder) return a.routeOrder - b.routeOrder;
+          if (a.time && b.time) return a.time.localeCompare(b.time);
+          if (a.time) return -1;
+          if (b.time) return 1;
+          return a.customerName.localeCompare(b.customerName, "ja");
         });
     }
 
-    function countMonthReservations(){
-      const year = state.viewDate.getFullYear();
-      const month = state.viewDate.getMonth();
-      return getFilteredReservations().filter(item => {
-        const dt = parseYmd(item.date);
-        return dt && dt.getFullYear() === year && dt.getMonth() === month;
-      }).length;
+    function getMonthWorkDaysCount() {
+      const y = state.monthCursor.getFullYear();
+      const m = state.monthCursor.getMonth();
+      const set = new Set(
+        getVisibleReservations()
+          .filter(r => {
+            const dt = parseYmd(r.date);
+            return dt && dt.getFullYear() === y && dt.getMonth() === m;
+          })
+          .map(r => r.date)
+      );
+      return set.size;
     }
 
-    function countUncheckedWithin3Days(){
-      return getFilteredReservations().filter(item => {
-        if(item.checked) return false;
-        if(!item.date) return false;
-        return isWithinUpcomingThreeDays(item.date);
-      }).length;
+    function renderWeekdays() {
+      const row = document.getElementById("weekdayRow");
+      row.innerHTML = WEEKDAYS.map(d => `<div class="weekday">${d}</div>`).join("");
     }
 
-    function countTodayReservations(){
-      const today = getToday();
-      return getFilteredReservations().filter(item => item.date === today).length;
-    }
+    function renderCalendar() {
+      document.getElementById("monthLabel").textContent = getMonthLabel(state.monthCursor);
+      document.getElementById("monthWorkDays").textContent = getMonthWorkDaysCount();
 
-    function renderSummary(){
-      $("summaryMonth").textContent = String(countMonthReservations());
-      $("summaryUnchecked").textContent = String(countUncheckedWithin3Days());
-      $("summaryToday").textContent = String(countTodayReservations());
-    }
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
 
-    function renderStaffSelect(){
-      const select = $("staffSelect");
-      const current = state.selectedStaff;
-      const hasStaff = state.staffList.length > 0;
+      const first = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth(), 1);
+      const last = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth() + 1, 0);
+      const startBlank = first.getDay();
+      const today = todayYmd();
 
-      const options = hasStaff
-        ? [`<option value="">全件表示</option>`].concat(
-            state.staffList.map(name => {
-              const selected = name === current ? " selected" : "";
-              return `<option value="${escapeHtml(name)}"${selected}>${escapeHtml(name)}</option>`;
-            })
-          )
-        : [`<option value="">全件表示</option>`];
-
-      select.innerHTML = options.join("");
-
-      const label = current || "全件表示";
-      $("staffPill").textContent = label;
-      $("dayStaffChip").textContent = label;
-    }
-
-    function renderCalendar(){
-      $("monthLabel").textContent = monthLabel(state.viewDate);
-
-      const grid = $("calendarGrid");
-      const year = state.viewDate.getFullYear();
-      const month = state.viewDate.getMonth();
-
-      const first = new Date(year, month, 1);
-      const startDay = first.getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const prevMonthLast = new Date(year, month, 0).getDate();
-      const selected = state.selectedDate;
-      const today = getToday();
-
-      const counts = {};
-      getFilteredReservations().forEach(item => {
-        counts[item.date] = (counts[item.date] || 0) + 1;
-      });
-
-      let html = "";
-      WEEKDAYS.forEach(w => {
-        html += `<div class="weekday">${w}</div>`;
-      });
-
-      for(let i = 0; i < startDay; i++){
-        const d = prevMonthLast - startDay + i + 1;
-        html += `<div class="day other"><div class="day-num">${d}</div></div>`;
+      for (let i = 0; i < startBlank; i++) {
+        const div = document.createElement("div");
+        div.className = "day empty";
+        grid.appendChild(div);
       }
 
-      for(let d = 1; d <= daysInMonth; d++){
-        const dateStr = `${year}-${String(month + 1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const count = counts[dateStr] || 0;
-        const classes = ["day"];
-        if(count > 0) classes.push("has-job");
-        if(dateStr === selected) classes.push("selected");
-        if(dateStr === today) classes.push("today");
+      for (let day = 1; day <= last.getDate(); day++) {
+        const dt = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth(), day);
+        const key = formatYmd(dt);
+        const count = getReservationsByDate(key).length;
 
-        html += `
-          <button class="${classes.join(" ")}" type="button" data-date="${dateStr}">
-            <div class="day-num">${d}</div>
-            <div class="day-count">${count > 0 ? count + "件" : ""}</div>
-          </button>
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "day";
+        if (count > 0) btn.classList.add("has-job");
+        if (key === state.selectedDate) btn.classList.add("selected");
+        if (key === today) btn.classList.add("today");
+
+        btn.innerHTML = `
+          <div class="day-num">${day}</div>
+          <div class="day-count">${count > 0 ? count + "件" : ""}</div>
         `;
+        btn.onclick = () => {
+          state.selectedDate = key;
+          renderAll();
+        };
+        grid.appendChild(btn);
       }
-
-      grid.innerHTML = html;
-
-      [...grid.querySelectorAll(".day[data-date]")].forEach(btn => {
-        btn.addEventListener("click", () => {
-          const date = btn.getAttribute("data-date");
-          if(!date) return;
-          state.selectedDate = date;
-          renderCalendar();
-          renderDay();
-        });
-      });
     }
 
-    function renderDay(){
-      const dateStr = state.selectedDate;
-      const wrap = $("jobsWrap");
+    function toggleChecked(id) {
+      const index = state.reservations.findIndex(r => r.id === id);
+      if (index === -1) return;
+      state.reservations[index].checked = !state.reservations[index].checked;
+      saveLocalReservations(state.reservations);
+      renderAll();
+    }
 
-      if(!dateStr){
-        $("dayTitle").textContent = "日付を選択してください";
-        $("dayCountChip").textContent = "0件";
-        wrap.innerHTML = `<div class="empty">カレンダーから日付を選んでください</div>`;
-        return;
-      }
+    function renderDay() {
+      const list = getReservationsByDate(state.selectedDate);
+      const wrap = document.getElementById("jobsWrap");
 
-      const list = getReservationsByDate(dateStr);
-      $("dayTitle").textContent = formatJapaneseDate(dateStr) || dateStr;
-      $("dayCountChip").textContent = `${list.length}件`;
+      document.getElementById("selectedDateTitle").textContent =
+        state.selectedDate ? getJapaneseDateLabel(state.selectedDate) : "日付を選択してください";
 
-      if(list.length === 0){
+      document.getElementById("selectedDateCount").textContent = `利用者 ${list.length}名`;
+      document.getElementById("selectedDateChecked").textContent =
+        `時間連絡済 ${list.filter(r => r.checked).length}件`;
+
+      document.getElementById("selectedCount").textContent = String(list.length);
+      document.getElementById("checkedCount").textContent = String(list.filter(r => r.checked).length);
+
+      if (!list.length) {
         wrap.innerHTML = `<div class="empty">この日の予約はありません</div>`;
         return;
       }
 
-      wrap.innerHTML = list.map((item, idx) => {
-        const warn = isWithinUpcomingThreeDays(item.date) && !item.checked;
-        const statusClass = warn ? "warn" : "ok";
-        const statusText = warn ? "3日前未確認" : "確認済 / 通常";
-        const googleMapUrl = item.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}` : "";
-        const telUrl = item.phone ? `tel:${item.phone.replace(/[^0-9+]/g,"")}` : "";
-
+      wrap.innerHTML = list.map((r, i) => {
+        const statusClass = r.checked ? "ok" : "warn";
+        const statusText = r.checked ? "時間連絡済" : "時間未確認";
         return `
           <div class="job-card">
             <div class="job-top">
-              <div class="route-badge">${escapeHtml(String(item.route || (idx + 1)))}番</div>
+              <div class="route-badge">${Number.isFinite(r.routeOrder) && r.routeOrder !== 9999 ? r.routeOrder : (i + 1)}</div>
               <div class="name-block">
-                <h3 class="customer-name">${escapeHtml(item.name)}</h3>
-                <div class="time-text">${escapeHtml(item.time || "時間未設定")} / ${escapeHtml(item.menu || "施術内容未設定")}</div>
+                <h3 class="customer-name">${escapeHtml(r.customerName || "名称未設定")}</h3>
+                <div class="time-text">${escapeHtml(r.time || "時間未定")}</div>
               </div>
               <div class="status-pill ${statusClass}">${statusText}</div>
             </div>
@@ -806,166 +926,92 @@
             <div class="info-list">
               <div class="info-item">
                 <div class="info-label">住所</div>
-                <div class="info-value">${escapeHtml(item.address || "住所未登録")}</div>
+                <div class="info-value">${escapeHtml(r.address || "未登録")}</div>
               </div>
               <div class="info-item">
                 <div class="info-label">電話</div>
                 <div class="info-value">
-                  ${item.phone ? `<a class="phone-link" href="${escapeHtml(telUrl)}">${escapeHtml(item.phone)}</a>` : "電話番号未登録"}
+                  ${r.phone ? `<a class="phone-link" href="tel:${escapeHtml(r.phone)}">${escapeHtml(r.phone)}</a>` : "未登録"}
                 </div>
               </div>
               <div class="info-item">
                 <div class="info-label">状態</div>
-                <div class="info-value">${escapeHtml(item.status || "予約済")}</div>
+                <div class="info-value">${escapeHtml(r.status || "予約済")}</div>
               </div>
             </div>
 
-            <div class="action-row">
-              <button class="action-btn secondary" type="button" data-copy="${escapeHtml(item.address)}">住所コピー</button>
-              <button class="action-btn primary" type="button" data-map="${escapeHtml(googleMapUrl)}">地図を開く</button>
+            <div class="check-wrap">
+              <div class="check-left">
+                <div class="check-title">3日前確認</div>
+                <div class="check-desc">電話で時間連絡が終わったらON</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" ${r.checked ? "checked" : ""} onchange="toggleChecked('${escapeHtml(r.id)}')">
+                <span class="slider"></span>
+              </label>
             </div>
           </div>
         `;
       }).join("");
-
-      wrap.querySelectorAll("[data-copy]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const text = btn.getAttribute("data-copy") || "";
-          await copyAddress(text);
-        });
-      });
-
-      wrap.querySelectorAll("[data-map]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const url = btn.getAttribute("data-map") || "";
-          openMap(url);
-        });
-      });
     }
 
-    function openMap(url){
-      if(!url){
-        alert("住所がありません");
-        return;
-      }
-      window.open(url, "_blank");
-    }
-
-    async function copyAddress(text){
-      const value = String(text || "").trim();
-      if(!value){
-        alert("住所がありません");
-        return;
-      }
-      try{
-        await navigator.clipboard.writeText(value);
-        alert("住所をコピーしました");
-      }catch(e){
-        alert("コピーできませんでした");
-      }
-    }
-
-    function ensureSelectedDate(){
-      const filtered = getFilteredReservations();
-      const today = getToday();
-
-      if(state.selectedDate) return;
-
-      if(filtered.some(item => item.date === today)){
-        state.selectedDate = today;
-        return;
-      }
-
-      const dates = [...new Set(filtered.map(item => item.date))].sort();
-      const upcoming = dates.find(date => date >= today);
-
-      if(upcoming){
-        state.selectedDate = upcoming;
-        return;
-      }
-
-      state.selectedDate = dates[dates.length - 1] || today;
-    }
-
-    function applyInitialStaff(){
-      const queryStaff = getStaffFromQuery();
-      if(queryStaff && state.staffList.includes(queryStaff)){
-        state.selectedStaff = queryStaff;
-      }else{
-        state.selectedStaff = "";
-      }
-    }
-
-    async function fetchApi(){
-      const res = await fetch("https://script.google.com/macros/s/AKfycbxNmHMwmRle_qcRkwp6rmPHfuB5QqUg5Ks-5UuGjIJJNQekbMd4NPymsFnJn9VYUyn3Dww/exec?t=" + Date.now(), {
-        method:"GET",
-        headers:{ "Accept":"application/json" }
-      });
-
-      if(!res.ok){
-        throw new Error(`API取得失敗: ${res.status} ${res.statusText}`);
-      }
-
-      const data = await res.json();
-
-      if(!Array.isArray(data)){
-        throw new Error("APIの返却が配列ではありません。");
-      }
-
-      return data;
-    }
-
-    function bindEvents(){
-      if(state.eventsBound) return;
-      state.eventsBound = true;
-
-      $("staffSelect").addEventListener("change", (e) => {
-        state.selectedStaff = e.target.value;
-        state.selectedDate = "";
-        ensureSelectedDate();
-        renderAll();
-      });
-
-      $("prevMonthBtn").addEventListener("click", () => {
-        state.viewDate = new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() - 1, 1);
-        renderSummary();
-        renderCalendar();
-      });
-
-      $("nextMonthBtn").addEventListener("click", () => {
-        state.viewDate = new Date(state.viewDate.getFullYear(), state.viewDate.getMonth() + 1, 1);
-        renderSummary();
-        renderCalendar();
-      });
-    }
-
-    function renderAll(){
-      renderStaffSelect();
-      renderSummary();
+    function renderAll() {
+      document.getElementById("staffPill").textContent = state.currentStaff || "スタッフ未設定";
       renderCalendar();
       renderDay();
     }
 
-    async function init(){
-      try{
-        const data = await fetchApi();
+    async function init() {
+      try {
+        hideError();
 
-        state.raw = data;
-        state.normalized = data.map((item, index) => normalizeReservation(item, index)).filter(item => item.date);
-        state.staffList = buildStaffList(state.normalized);
-        applyInitialStaff();
-        ensureSelectedDate();
-        bindEvents();
+        const apiRows = await fetchReservations();
+        const localRows = loadLocalReservations();
+
+        const checkedMap = new Map(
+          localRows.map(r => [String(r.id), !!r.checked])
+        );
+
+        state.reservations = apiRows.map(r => ({
+          ...r,
+          checked: checkedMap.has(String(r.id)) ? checkedMap.get(String(r.id)) : !!r.checked
+        }));
+
+        saveLocalReservations(state.reservations);
+
+        setupStaffSelect();
+
+        const visible = getVisibleReservations();
+        if (!visible.some(r => r.date === state.selectedDate)) {
+          const firstDate = visible.map(r => r.date).sort()[0];
+          if (firstDate) state.selectedDate = firstDate;
+        }
+
+        renderWeekdays();
         renderAll();
 
-        $("loadingBox").style.display = "none";
-      }catch(err){
-        $("loadingBox").style.display = "none";
-        $("errorBox").style.display = "block";
-        $("errorBox").textContent = String(err.message || err);
+      } catch (error) {
+        showError(
+          "取得失敗：" + error.message + "\n\n" +
+          "今のGASは動いています。\n" +
+          "このHTMLを GitHub Pages で開いてください。\n" +
+          "file:/// 直開きは使わないでください。"
+        );
+        console.error(error);
       }
     }
 
+    document.getElementById("prevMonthBtn").onclick = () => {
+      state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth() - 1, 1);
+      renderAll();
+    };
+
+    document.getElementById("nextMonthBtn").onclick = () => {
+      state.monthCursor = new Date(state.monthCursor.getFullYear(), state.monthCursor.getMonth() + 1, 1);
+      renderAll();
+    };
+
+    window.toggleChecked = toggleChecked;
     init();
   </script>
 </body>
